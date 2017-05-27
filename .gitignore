@@ -1,0 +1,8 @@
+/other
+/ce-full
+/ce-patch
+/ee-full
+/ee-patch
+*.sqlite
+blob.json
+env.sh
