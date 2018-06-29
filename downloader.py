@@ -16,6 +16,10 @@ except ImportError:
 MAGEID = os.environ['MAGEID']
 TOKEN = os.environ['TOKEN']
 
+CATEGORIES = ('ee-full', 'ce-full', 'ee-patch', 'ce-patch')  # skipping 'other'
+DOWNLOAD_PATH = os.path.dirname(os.path.realpath(__file__)) + '/downloaded'
+
+
 """
 $ curl -k https://$MAGEID:$TOKEN@www.magentocommerce.com/products/downloads/info/help
 
@@ -51,8 +55,8 @@ Filter Params:
 
 """
 
-import requests_cache
-requests_cache.install_cache()
+# import requests_cache
+# requests_cache.install_cache()
 
 
 def download_file(filename, path):
@@ -95,11 +99,14 @@ def verify_md5sum(path, want_md5):
 def sync_everything(all_files):
     # print(json.dumps(blob, indent=2))
     for category, files in all_files.items():
-        assert category in ('other', 'ee-full', 'ce-full', 'ee-patch', 'ce-patch'), \
+
+        assert category in CATEGORIES, \
             'unknown category: {}'.format(category)
 
-        if not os.path.exists(category):
-            os.mkdir(category)
+        category_path = DOWNLOAD_PATH + '/' + category
+
+        if not os.path.exists(category_path):
+            os.mkdir(category_path)
         
         if isinstance(files, dict):
             files = list(itertools.chain.from_iterable(files.values()))
@@ -113,18 +120,20 @@ def sync_everything(all_files):
             if file['file_name'].rpartition('.')[2] in ('zip', 'bz2'):
                 continue
 
-            target = category + '/' + file['file_name']
+            target = category_path + '/' + file['file_name']
 
             if not verify_md5sum(target, file['md5']):
+                print("md5 mismatch for {}, redownloading!".format(file['file_name']))
                 download_file(file['file_name'], target)
 
             print(target)
 
-        print(category, len(files))
+        print(category_path, len(files))
 
 
 def calc_req_patches(all_files):
 
+    # version to patch
     v2p = defaultdict(set)
 
     for category, files in all_files.items():
@@ -152,7 +161,13 @@ def calc_req_patches(all_files):
 
 
 def main():
+
+    if not os.path.exists(DOWNLOAD_PATH):
+        os.mkdir(DOWNLOAD_PATH)
+
     blob = requests.get('https://www.magentocommerce.com/products/downloads/info/json', auth=(MAGEID, TOKEN)).json()
+    with open('info.json', 'w') as fh:
+        fh.write(json.dumps(blob, indent=2, sort_keys=True))
     sync_everything(blob)
     # calc_req_patches(blob)
 

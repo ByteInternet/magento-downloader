@@ -1,8 +1,7 @@
-/other
-/ce-full
-/ce-patch
-/ee-full
-/ee-patch
+/downloaded
 *.sqlite
 blob.json
 env.sh
+.idea/
+sync.sh
+info.json
