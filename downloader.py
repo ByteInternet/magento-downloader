@@ -100,14 +100,15 @@ def sync_everything(all_files):
     # print(json.dumps(blob, indent=2))
     for category, files in all_files.items():
 
-        assert category in CATEGORIES, \
-            'unknown category: {}'.format(category)
+        if category not in CATEGORIES:
+            print('unknown category: {}, skipping...'.format(category))
+            continue
 
         category_path = DOWNLOAD_PATH + '/' + category
 
         if not os.path.exists(category_path):
             os.mkdir(category_path)
-        
+
         if isinstance(files, dict):
             files = list(itertools.chain.from_iterable(files.values()))
 
