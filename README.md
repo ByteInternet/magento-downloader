@@ -8,5 +8,5 @@ Usage:
 pip install -r requirements.txt
 export TOKEN=xxx
 export MAGEID=xxxx
-python3 sync.py
+python3 downloader.py
 ```
